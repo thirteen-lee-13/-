@@ -1,0 +1,17 @@
+#include <REGX52.H>
+#include"LCD1602.h"
+
+
+void main()
+{
+ LCD_Init();
+while(1)
+{
+LCD_ShowString(1,3,"Hello word");
+
+ LCD_ShowChar(2,1,'B');
+LCD_ShowString(2,3,"Hello word");
+
+}
+
+}

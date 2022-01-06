@@ -1,0 +1,24 @@
+#include <REGX52.H>
+#include"TIMER0.h"
+#include"delay.h"
+#include"Key.h"
+
+
+unsigned char KeyNum;
+
+void main()
+{
+
+//TIMER0Init();
+while(1)
+	{
+	KeyNum=Key();
+	if(KeyNum)
+	   {
+	    if(KeyNum==1)P2_1=~P2_1;
+			if(KeyNum==2)P2_2=~P2_2;
+			if(KeyNum==3)P2_3=~P2_3;
+			if(KeyNum==4)P2_4=~P2_4;
+     }
+	}
+}

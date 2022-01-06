@@ -1,0 +1,35 @@
+#include <REGX52.H>
+#include"LCD1602.h"
+
+
+void delay(unsigned int xms)
+{
+unsigned char i,j;
+while(xms--)
+{
+i=2;
+j=239;
+do
+{
+while(--j);
+}
+while(--i);
+}
+} 
+
+void main()
+{
+unsigned int a=0;
+ LCD_Init();
+while(1)
+{
+
+LCD_ShowNum(1,1,123,3);
+LCD_ShowSignedNum(2,1,-a,3);
+delay(200);
+a++;
+
+
+}
+
+}
