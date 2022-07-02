@@ -1,0 +1,264 @@
+module top(clk_50,keyl,keyr,rst,keyl_number,keyr_number,seg,sel,led1,led2);
+input clk_50,keyl,keyr,rst,keyl_number,keyr_number;
+output [7:0]seg;
+output [7:0]sel;
+output led1;
+output led2;
+wire clk_1k;
+wire [5:0]count;
+wire [3:0]number;
+wire [2:0]number_l;
+wire [2:0]number_r;
+wire  led1;
+wire  led2;
+wire [3:0]number_l_fh;
+wire [3:0]number_r_fh;
+
+clk_div   		 U1(.clk_50(clk_50),.f(1000),.clk_1k(clk_1k));
+
+qiangda_count   U2(.clk_1k(clk_1k),.keyl(keyl),.keyr(keyr),.count(count),.number(number),.rst(rst),.led1(led1));
+
+jifen				 U3(.clk_1k(clk_1k),.keyl_number(keyl_number),.keyr_number(keyr_number),.number_l(number_l),.number_r(number_r),.led2(led2),.keyr(keyr),.keyl(keyl));
+
+segdri			 U4(.clk_50(clk_50),.count(count),.number(number),.number_l(number_l),.number_r(number_r),.seg(seg),.sel(sel),.number_l_fh(number_l_fh),.number_r_fh(number_r_fh)); 
+
+
+endmodule
+
+
+module clk_div(clk_50,f,clk_1k);
+input clk_50;
+input [31:0]f;
+output clk_1k;
+reg clk_1k;
+reg[31:0]cnt;
+always@(posedge clk_50)begin
+   if(cnt<25000000-1)cnt=f+cnt;
+	else begin cnt=0;clk_1k=!clk_1k;end end
+endmodule  
+
+
+
+module qiangda_count(clk_1k,keyl,keyr,count,number,rst,led1);
+input clk_1k,keyl,keyr,rst;
+output reg[5:0]count;
+output reg[3:0]number;
+output led1;
+reg led1;
+reg [3:0]cnt;
+reg [3:0]cnt1;
+reg [3:0]cnt2;
+reg c;
+reg c1;
+reg c2;
+reg n;
+reg n1;
+reg n2;
+reg [1:0]m;
+reg [10:0]count3;
+initial begin n=0;n1=0;n2=0;end
+
+always@(posedge clk_1k) begin
+case(c)
+0:if(rst==0)begin if(cnt<10)cnt=cnt+1;else begin cnt=0;c=0;n=!n;end end
+
+1:if(rst)c=1;
+endcase
+case(n)
+0:begin count=10;m=0;number=0;end
+1:begin if((~n1)&(~n2))if(count3<999)count3=count3+1;
+                 else begin count3=0;if(count>0)count=count-1;else begin count=0;end end
+        else count<=count;
+		  if(n1&~n2)m=1;
+		  if(~n1&n2)m=2;
+		  case(m)
+		  1:number=1;
+		  2:number=2;
+	     endcase	
+	end  
+endcase
+end
+
+always@(posedge clk_1k) begin
+if(n==0)n1=0;
+case(c1)
+0:if(keyl==0)begin if(cnt1<10)cnt1=cnt1+1;else begin cnt1=0;c1=0;if(m==0)n1=!n1;end end
+1:if(keyl)c1=1;
+endcase
+end
+
+always@(posedge clk_1k) begin
+if(n==0)n2=0;
+case(c2)
+0:if(keyr==0)begin if(cnt2<10)cnt2=cnt2+1;else begin cnt2=0;c2=0;if(m==0)n2=!n2;end end
+1:if(keyr)c2=1;
+endcase
+end
+
+
+
+endmodule
+
+
+
+module jifen(clk_1k,keyl_number,keyr_number,number_l,number_r,led2,led1,number_l_fh,number_r_fh,rst,keyl,keyr);
+input clk_1k,keyl_number,keyr_number,rst,keyl,keyr;
+output [2:0]number_l;
+output [2:0]number_r;
+output reg[3:0]number_l_fh;
+output reg[3:0]number_r_fh;
+output led2;
+reg led2;
+output led1;
+reg led1;
+reg [3:0]cnt3;
+reg [3:0]cnt4;
+reg [6:0]cnt5;
+reg [6:0]cnt6;
+reg count;
+reg [2:0]number_l;
+reg [2:0]number_r;
+
+reg [3:0]a;
+
+
+//if(keyr_number==0) begin
+//led1=0;
+//if(number_l>0)
+//number_l=number_l-1;
+//else if(number_l==0) begin
+//number_l_fh=10;
+//number_l=number_l+1;
+//end
+//else 
+//number_l_fh=13;
+//end
+//else
+//led1=1;
+
+
+
+
+always@(posedge clk_1k) begin
+
+
+if(rst) begin
+
+if(keyr==0) begin
+ if(a<10) a=a+1;
+ else begin  led1=0;
+if(number_l>0) number_l=number_l-1;
+else if(number_l==0) begin number_l_fh=10; number_l=number_l+1; end
+else number_l_fh=13;
+
+end
+end
+else
+led1=1;
+end
+
+
+
+
+if(number_l<6&&number_r<6) begin
+
+
+if(keyl_number==0) begin 
+if(cnt5<90) begin cnt5=cnt5+1;end 
+else begin
+cnt5=5;
+if(cnt3==1) begin number_l=number_l+1;cnt3=0;end
+else begin 
+cnt3=1;
+end
+end
+end
+
+if(keyr_number==0) begin
+if(cnt6<90) begin cnt6=cnt6+1;end 
+else begin
+cnt6=0;
+if(cnt4==1) begin number_r=number_r+1; cnt4=0;end
+else begin
+cnt4=1;
+end
+end
+end
+end
+
+else begin
+number_r=0;
+number_l=0;
+end
+
+if(number_l==5) begin
+led2=0;
+end
+
+
+else if(number_r==5) begin
+led2=0;
+end
+
+else
+led2=1;
+
+end
+
+endmodule
+
+module  segdri(clk_50,count,number,number_l,number_r,seg,sel,number_l_fh,number_r_fh); 
+input clk_50;
+input [5:0]count; 
+input [3:0]number; 
+input [2:0]number_l; 
+input [2:0]number_r; 
+input [3:0]number_l_fh;
+input [3:0]number_r_fh;
+
+output [7:0]seg; 
+output [7:0]sel;
+reg clk_scan;
+reg [31:0]c;
+wire [3:0]a;
+wire [3:0]b;
+
+always @(posedge clk_50) begin  
+	if(c<24999999) c=c+500;  //分频得到500hz的扫描时钟
+	else begin c=0; clk_scan =! clk_scan; end
+end
+
+reg [2:0]scan; 
+always @(posedge clk_scan) scan=scan+1; 
+
+reg [31:0]num; 
+reg [7:0]sel;
+assign a=count[5:0]/10;
+assign b=count[5:0]%10;
+always @(posedge clk_50)  begin 
+
+  case(scan) 
+    0:begin sel=8'B1111_1110;  num=number; end//2
+    1:begin sel=8'B1111_1101;  num=number_l; end
+    2:begin sel=8'B1111_1011;  num=number_l_fh;  end
+    3:begin sel=8'B1111_0111;  num=b; end
+    4:begin sel=8'B1110_1111;  num=a; end
+    5:begin sel=8'B1101_1111;  num=10; end
+    6:begin sel=8'B1011_1111;  num=number_r; end
+    7:begin sel=8'B0111_1111;  num=number_r_fh; end
+  endcase
+end
+
+assign seg = 	(num==0)? 8'B0000_0011:	//显示"0"
+			(num ==1)? 8'B1001_1111:	//显示"1"
+			(num ==2)? 8'B0010_0101:	//显示"2"
+			(num ==3)? 8'B0000_1101:	//显示"3"
+			(num ==4)? 8'B1001_1001:	//显示"4"
+			(num ==5)? 8'B0100_1001:	//显示"5"
+			(num ==6)? 8'B0100_0001:	//显示"6"
+			(num ==7)? 8'B0001_1111:	//显示"7"
+			(num ==8)? 8'B0000_0001:	//显示"8"
+			(num ==9)? 8'B0000_1001:	//显示"9"
+(num ==10)? 8'B1111_1101:	 //显示"-"
+	        8'B1111_1111;  //熄灭
+endmodule
